@@ -5,7 +5,7 @@ import java.util.Observable;
 
 
 /** The state of a game of 2048.
- *  @author TODO: YOUR NAME HERE
+ *  @author Wenyu Zhang
  */
 public class Model extends Observable {
     /** Current contents of the board. */
@@ -110,9 +110,8 @@ public class Model extends Observable {
         boolean changed;
         changed = false;
 
-        // TODO: Modify this.board (and perhaps this.score) to account
-        // for the tilt to the Side SIDE. If the board changed, set the
-        // changed local variable to true.
+
+
 
         checkGameOver();
         if (changed) {
@@ -137,7 +136,14 @@ public class Model extends Observable {
      *  Empty spaces are stored as null.
      * */
     public static boolean emptySpaceExists(Board b) {
-        // TODO: Fill in this function.
+        int size =b.size();
+        for (int col = 0; col < size; col++ ){
+            for (int row = 0; row < size; row++){
+                if (b.tile(col, row) == null ) {
+                    return true;
+                }
+            }
+        }
         return false;
     }
 
@@ -147,8 +153,19 @@ public class Model extends Observable {
      * given a Tile object t, we get its value with t.value().
      */
     public static boolean maxTileExists(Board b) {
-        // TODO: Fill in this function.
-        return false;
+        int size = b.size();
+        boolean maxBoolean = false;
+        for (int col = 0; col < size; col++ ){
+            for (int row = 0; row < size; row++) {
+             if (b.tile(col, row) == null) {
+                 maxBoolean = false;
+             }else if(b.tile(col, row).value() == MAX_PIECE) {
+                    maxBoolean = true;
+                    return maxBoolean;
+             }
+            }
+        }
+        return maxBoolean;
     }
 
     /**
@@ -158,8 +175,32 @@ public class Model extends Observable {
      * 2. There are two adjacent tiles with the same value.
      */
     public static boolean atLeastOneMoveExists(Board b) {
-        // TODO: Fill in this function.
-        return false;
+        int size = b.size();
+        boolean moveBoolean = false;
+
+        if (emptySpaceExists(b)){
+            moveBoolean = true;
+
+        }else {
+            //bool is true if there have same value
+            for (int col = 0; col < size; col++) {
+                for (int row = 1; row < size; row++) {
+                    if (b.tile(col, row).value() == b.tile(col, row-1).value()){
+                        moveBoolean = true;
+                    }
+                }
+            }
+
+            for (int row = 0; row < size; row++) {
+                for (int col = 1; col < size; col++) {
+                    if (b.tile(col, row).value() == b.tile(col-1, row).value()){
+                        moveBoolean = true;
+                    }
+                }
+            }
+
+        }
+        return moveBoolean;
     }
 
 
