@@ -110,8 +110,16 @@ public class Model extends Observable {
         boolean changed;
         changed = false;
 
-
-
+        int size = board.size();
+        boolean changedOnce;
+        board.setViewingPerspective(side);
+        for (int col = 0; col < size; col++){
+            changedOnce = singleColumn(col);
+            if (changedOnce){
+                changed = true;
+            }
+        }
+        board.setViewingPerspective(Side.NORTH);
 
         checkGameOver();
         if (changed) {
@@ -119,6 +127,101 @@ public class Model extends Observable {
         }
         return changed;
     }
+
+    //help method for tilt
+    private boolean singleColumn(int col){
+        int size = board.size();
+        boolean changed = false;
+
+        int num = numValues(board, col);
+        int[] indexValues = getIndex(board, col);
+
+        int mergedNum = 0;
+
+        for (int i = num-1; i >=0; i--){
+            if (i>0 && listValues(board, col)[i] == listValues(board, col)[i-1]){
+                mergedNum++;
+                if(indexValues[i] == size-1){mergedNum--;}
+
+                int sameValues = listValues(board, col)[i];
+                int rowUp = indexValues[i];
+                int rowDown = indexValues[i-1];
+
+                Tile tUp = board.tile(col, rowUp);
+                Tile tDown = board.tile(col, rowDown);
+                int rowMerged = rowUp + mergedNum;
+
+                board.move(col,rowMerged, tDown);
+                board.move(col,rowMerged, tUp);
+
+                score += 2*sameValues;
+                changed = true;
+                i--;
+            } else{
+                int row = indexValues[i];
+                Tile t = board.tile(col, row);
+                board.move(col, rowGap(t, indexValues, num, size)+row+mergedNum, t);
+                changed = true;
+            }
+        }
+        return changed;
+    }
+
+    //boolean of that whether there are same values
+    //计算一列有多少有效数字
+    private int numValues(Board b, int col){
+        int size = b.size();
+        int num = 0;
+        for (int row = 0; row < size; row++){
+            if (b.tile(col, row) != null){
+                num++;
+            }
+        }
+        return num;
+    }
+    //得到有效数字的row索引，以数组形式返回
+    private int[] getIndex(Board b, int col){
+        int num = numValues(b, col);
+        int[] indexValues = new int[num];
+        int size = b.size();
+        int i = 0;
+        for (int row = 0; row < size; row++){
+            if (b.tile(col, row) != null) {
+                indexValues[i] = row;
+                i++;
+            }
+        }
+        return indexValues;
+    }
+    //得到有效数字，以数组形式返回
+    private int[] listValues(Board b, int col){
+        int num = numValues(b, col);
+        int[] listV = new int[num];
+        for (int i = 0; i< num; i++){
+            int[] indexValues = getIndex(b, col);
+            listV[i] = b.tile(col, indexValues[i]).value();
+        }
+        return listV;
+    }
+
+    /**
+     * 解决两个不同有效数字之间的row差值
+     */
+    private int rowGap(Tile t, int[] indexValues, int num, int size){
+        int gap = 0;
+        int index = num-1;
+        for (int i = num-1; i >=0; i--){
+            if (t.row() == indexValues[i]){
+                index = i;
+            }
+        }
+        if (index != num-1){
+            gap = indexValues[index+1] - indexValues[index];
+        }
+        gap =  gap + (size-1 - indexValues[num-1]);
+        return gap;
+    }
+
 
     /** Checks if the game is over and sets the gameOver variable
      *  appropriately.
